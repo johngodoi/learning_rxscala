@@ -2,6 +2,8 @@ package com.johngodoi.rxscala
 
 import io.reactivex.Flowable
 import rx.lang.scala.Observable
+import rx.lang.scala.schedulers.NewThreadScheduler
+import rx.schedulers.Schedulers
 
 import scala.concurrent.duration._
 
@@ -33,7 +35,32 @@ object HelloWorld extends App {
 
   integerObservable.subscribe(v => print(v + " "))
 
-  def printObservable[T](v:T):Unit = print(v)
+  def printObservable[T](v:T):Unit = print(v+" - ")
 
   integerObservable.subscribe(printObservable(_))
+
+  println("After filter")
+
+  integerObservable
+    .filter(_>4)
+    .subscribe(printObservable(_))
+
+  println("After mapping")
+
+  integerObservable
+    .map(integer => Math.multiplyExact(integer, integer))
+    .subscribe(printObservable(_))
+
+  println("Using ConsolePrintObserver")
+  integerObservable.subscribe(new ConsolePrintObserver)
+
+  println("Using new thread scheduler")
+  integerObservable.unsubscribeOn(NewThreadScheduler.apply()).subscribe(new ConsolePrintObserver)
+
+  println("Putting all together")
+  integerObservable
+    .filter(_>4)
+    .map(integer => Math.multiplyExact(integer,integer))
+    .unsubscribeOn(NewThreadScheduler.apply())
+    .subscribe(new ConsolePrintObserver)
 }
